@@ -58,7 +58,7 @@ func TestInfo(t *testing.T) {
 		file bool
 		in   string
 	}{
-		name: "logger",
+		name: "",
 		lvl:  INFO,
 		file: false,
 		in:   "hello world",

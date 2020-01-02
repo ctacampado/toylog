@@ -59,9 +59,13 @@ func NewToyLog(args ...interface{}) (*ToyLog, error) {
 	for _, arg := range args {
 		switch a := arg.(type) {
 		case string:
+			var lname string
 			if a != "" {
-				tl.name = fmt.Sprintf("[%s] ", a)
+				lname = fmt.Sprintf("[%s] ", a)
+			} else {
+				lname = "[toylog] "
 			}
+			tl.name = lname
 		case LogLvl:
 			if a >= 0 && a <= EMRG {
 				tl.lvl = a
@@ -89,7 +93,9 @@ func NewToyLog(args ...interface{}) (*ToyLog, error) {
 
 // Close log file
 func (t *ToyLog) Close() {
-	t.File.Close()
+	if t.File != os.Stdout {
+		t.File.Close()
+	}
 }
 
 // Info level is a logging level that uses log.LstdFlags only.
