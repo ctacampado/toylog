@@ -46,7 +46,9 @@ type ToyLog struct {
 // as follows:
 // - type string for the logger name
 // - type int for the log level
-// - type *os.File for the output file
+// - type bool set to true if you want to output logs to a file.
+//   file name is using the format YYYY_MM_DD_HH_MM_SS.log
+//
 // If it is an unknown parameter type, it returns nil
 func NewToyLog(args ...interface{}) (*ToyLog, error) {
 
