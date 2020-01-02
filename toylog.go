@@ -42,6 +42,24 @@ type ToyLog struct {
 	logger   *log.Logger // pointer to the active logger object
 }
 
+func initLoggerName(s string) (lname string) {
+	if s != "" {
+		lname = fmt.Sprintf("[%s] ", s)
+	} else {
+		lname = "[toylog] "
+	}
+	return
+}
+
+func initLogFile() (f *os.File, fname string, err error) {
+	fname = time.Now().Format("2006_01_02_15_04_05") + ".log"
+	f, err = os.OpenFile(fname, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, "", err
+	}
+	return
+}
+
 // NewToyLog initializes ToyLog struct. Valid arguments are
 // as follows:
 // - type string for the logger name
@@ -50,45 +68,32 @@ type ToyLog struct {
 //   file name is using the format YYYY_MM_DD_HH_MM_SS.log
 //
 // If it is an unknown parameter type, it returns nil
-func NewToyLog(args ...interface{}) (*ToyLog, error) {
-
-	tl := &ToyLog{
+func NewToyLog(args ...interface{}) (tl *ToyLog, err error) {
+	tl = &ToyLog{
 		name: "logger",
 		lvl:  0,
 		File: os.Stdout,
 	}
-
 	for _, arg := range args {
 		switch a := arg.(type) {
 		case string:
-			var lname string
-			if a != "" {
-				lname = fmt.Sprintf("[%s] ", a)
-			} else {
-				lname = "[toylog] "
-			}
-			tl.name = lname
+			tl.name = initLoggerName(a)
 		case LogLvl:
 			if a >= 0 && a <= EMRG {
 				tl.lvl = a
 			}
 		case bool:
 			if a == true {
-				fname := time.Now().Format("2006_01_02_15_04_05") + ".log"
-				f, err := os.OpenFile(fname,
-					os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				tl.File, tl.FileName, err = initLogFile()
 				if err != nil {
 					return nil, err
 				}
-				tl.File = f
-				tl.FileName = fname
 			}
 		default:
 			err := fmt.Sprintf("unknown parameter '%v' of type %s\n", arg, reflect.TypeOf(arg))
 			return nil, errors.New(err)
 		}
 	}
-
 	tl.logger = log.New(tl.File, tl.name, log.LstdFlags)
 	return tl, nil
 }
