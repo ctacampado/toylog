@@ -111,7 +111,7 @@ func (t *ToyLog) Close() {
 func (t *ToyLog) Info(format string, v ...interface{}) {
 	if t.lvl >= INFO {
 		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Output(2, fmt.Sprintf("[INFO] {\"info\":"+format+"}", v...))
+		t.logger.Output(2, fmt.Sprintf("[INFO] {\"info\":\""+format+"\"}", v...))
 	}
 }
 
@@ -120,7 +120,7 @@ func (t *ToyLog) Info(format string, v ...interface{}) {
 func (t *ToyLog) Debug(format string, v ...interface{}) {
 	if t.lvl >= DEBUG {
 		t.logger.SetFlags(log.LstdFlags | log.Lshortfile)
-		t.logger.Output(2, fmt.Sprintf("[DEBUG] {\"debug\":"+format+"}", v...))
+		t.logger.Output(2, fmt.Sprintf("[DEBUG] {\"debug\":\""+format+"\"}", v...))
 	}
 }
 
@@ -129,6 +129,6 @@ func (t *ToyLog) Debug(format string, v ...interface{}) {
 func (t *ToyLog) Error(format string, v ...interface{}) {
 	t.logger.SetFlags(log.LstdFlags | log.Lshortfile)
 	if t.lvl >= ERR {
-		t.logger.Output(2, fmt.Sprintf("[ERROR] {\"error\":"+format+"}", v...))
+		t.logger.Output(2, fmt.Sprintf("[ERROR] {\"error\":\""+format+"\"}", v...))
 	}
 }
