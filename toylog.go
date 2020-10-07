@@ -22,8 +22,9 @@ type LogLvl int
 
 //logging levels
 const (
-	DEBUG LogLvl = iota
+	PROD LogLvl = iota
 	INFO
+	DEBUG
 	NOTICE
 	WARNING
 	ERR
@@ -110,22 +111,24 @@ func (t *ToyLog) Close() {
 func (t *ToyLog) Info(format string, v ...interface{}) {
 	if t.lvl >= INFO {
 		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Output(2, fmt.Sprintf("[INFO]: "+format, v...))
+		t.logger.Output(2, fmt.Sprintf("[INFO] {\"info\":"+format+"}", v...))
 	}
 }
 
 // Debug level is a logging level that uses log.LstdFlags | log.Lshortfile flags.
 // This is the default logging level
 func (t *ToyLog) Debug(format string, v ...interface{}) {
-	t.logger.SetFlags(log.LstdFlags | log.Lshortfile)
-	t.logger.Output(2, fmt.Sprintf("[DEBUG]"+format, v...))
+	if t.lvl >= DEBUG {
+		t.logger.SetFlags(log.LstdFlags | log.Lshortfile)
+		t.logger.Output(2, fmt.Sprintf("[DEBUG] {\"debug\":"+format+"}", v...))
+	}
 }
 
 // Error level is a logging level that uses log.LstdFlags | log.Lshortfile | log.Llongfile flags.
 // Using this log level will show all log levels less than or equal to ERR level
 func (t *ToyLog) Error(format string, v ...interface{}) {
-	t.logger.SetFlags(log.LstdFlags | log.Lshortfile | log.Llongfile)
+	t.logger.SetFlags(log.LstdFlags | log.Lshortfile)
 	if t.lvl >= ERR {
-		t.logger.Output(2, fmt.Sprintf("[ERROR]"+format, v...))
+		t.logger.Output(2, fmt.Sprintf("[ERROR] {\"error\":"+format+"}", v...))
 	}
 }
