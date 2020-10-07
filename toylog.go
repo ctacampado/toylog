@@ -110,8 +110,7 @@ func (t *ToyLog) Close() {
 func (t *ToyLog) Info(format string, v ...interface{}) {
 	if t.lvl >= INFO {
 		t.logger.SetFlags(log.LstdFlags)
-		newfmt := fmt.Sprintf("[INFO]: " + format)
-		t.logger.Output(2, fmt.Sprintf(newfmt, v...))
+		t.logger.Output(2, fmt.Sprintf("[INFO]: "+format, v...))
 	}
 }
 
@@ -119,8 +118,7 @@ func (t *ToyLog) Info(format string, v ...interface{}) {
 // This is the default logging level
 func (t *ToyLog) Debug(format string, v ...interface{}) {
 	t.logger.SetFlags(log.LstdFlags | log.Lshortfile)
-	newfmt := fmt.Sprintf("[DEBUG]: " + format)
-	t.logger.Output(2, fmt.Sprintf(newfmt, v...))
+	t.logger.Output(2, fmt.Sprintf("[DEBUG]"+format, v...))
 }
 
 // Error level is a logging level that uses log.LstdFlags | log.Lshortfile | log.Llongfile flags.
@@ -128,7 +126,6 @@ func (t *ToyLog) Debug(format string, v ...interface{}) {
 func (t *ToyLog) Error(format string, v ...interface{}) {
 	t.logger.SetFlags(log.LstdFlags | log.Lshortfile | log.Llongfile)
 	if t.lvl >= ERR {
-		newfmt := fmt.Sprintf("[ERROR]: " + format)
-		t.logger.Output(2, fmt.Sprintf(newfmt, v...))
+		t.logger.Output(2, fmt.Sprintf("[ERROR]"+format, v...))
 	}
 }
