@@ -7,7 +7,6 @@
 package toylog
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -23,14 +22,13 @@ type LogLvl int
 //logging levels
 const (
 	PROD LogLvl = iota
-	INFO
+	TRACE
 	DEBUG
-	NOTICE
+	INFO
 	WARNING
 	ERR
-	CRIT
-	ALERT
-	EMRG
+	FATAL
+	PANIC
 )
 
 // A ToyLog represents a container object for a
@@ -45,19 +43,17 @@ type ToyLog struct {
 
 func initLoggerName(s string) (lname string) {
 	if s != "" {
-		lname = fmt.Sprintf("[%s] ", s)
-	} else {
-		lname = "[toylog] "
+		return fmt.Sprintf("[%s] ", s)
 	}
-	return
+	return "[toylog] "
 }
 
 // file name is using the format YYYY_MM_DD_HH_MM_SS.log
-func initLogFile() (f *os.File, fname string, err error) {
+func initLogFile() (f *os.File, fname string) {
 	fname = time.Now().Format("2006_01_02_15_04_05") + ".log"
-	f, err = os.OpenFile(fname, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(fname, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return nil, "", err
+		panic(err)
 	}
 	return
 }
@@ -69,7 +65,7 @@ func initLogFile() (f *os.File, fname string, err error) {
 // - type bool set to true if you want to output logs to a file.
 //
 // If it is an unknown parameter type, it returns nil
-func NewToyLog(args ...interface{}) (tl *ToyLog, err error) {
+func NewToyLog(args ...interface{}) (tl *ToyLog) {
 	tl = &ToyLog{
 		name: "logger",
 		lvl:  0,
@@ -80,23 +76,20 @@ func NewToyLog(args ...interface{}) (tl *ToyLog, err error) {
 		case string:
 			tl.name = initLoggerName(a)
 		case LogLvl:
-			if a >= 0 && a <= EMRG {
+			if a >= 0 && a <= PANIC {
 				tl.lvl = a
 			}
 		case bool:
 			if a == true {
-				tl.File, tl.FileName, err = initLogFile()
-				if err != nil {
-					return nil, err
-				}
+				tl.File, tl.FileName = initLogFile()
 			}
 		default:
 			err := fmt.Sprintf("unknown parameter '%v' of type %s\n", arg, reflect.TypeOf(arg))
-			return nil, errors.New(err)
+			panic(err)
 		}
 	}
 	tl.logger = log.New(tl.File, tl.name, log.LstdFlags)
-	return tl, nil
+	return tl
 }
 
 // Close log file
@@ -106,8 +99,23 @@ func (t *ToyLog) Close() {
 	}
 }
 
-// Info level is a logging level that uses log.LstdFlags only.
-// Using Info log level also shows Debug level logs
+// Trace level
+func (t *ToyLog) Trace(format string, v ...interface{}) {
+	if t.lvl >= TRACE {
+		t.logger.SetFlags(log.LstdFlags)
+		t.logger.Output(2, fmt.Sprintf("[TRACE] {\"trace\":\""+format+"\"}", v...))
+	}
+}
+
+// Debug level
+func (t *ToyLog) Debug(format string, v ...interface{}) {
+	if t.lvl >= DEBUG {
+		t.logger.SetFlags(log.LstdFlags)
+		t.logger.Output(2, fmt.Sprintf("[DEBUG] {\"debug\":\""+format+"\"}", v...))
+	}
+}
+
+// Info level
 func (t *ToyLog) Info(format string, v ...interface{}) {
 	if t.lvl >= INFO {
 		t.logger.SetFlags(log.LstdFlags)
@@ -115,20 +123,35 @@ func (t *ToyLog) Info(format string, v ...interface{}) {
 	}
 }
 
-// Debug level is a logging level that uses log.LstdFlags | log.Lshortfile flags.
-// This is the default logging level
-func (t *ToyLog) Debug(format string, v ...interface{}) {
-	if t.lvl >= DEBUG {
-		t.logger.SetFlags(log.LstdFlags | log.Lshortfile)
-		t.logger.Output(2, fmt.Sprintf("[DEBUG] {\"debug\":\""+format+"\"}", v...))
+// Warning level
+func (t *ToyLog) Warning(format string, v ...interface{}) {
+	if t.lvl >= INFO {
+		t.logger.SetFlags(log.LstdFlags)
+		t.logger.Output(2, fmt.Sprintf("[WARN] {\"info\":\""+format+"\"}", v...))
 	}
 }
 
-// Error level is a logging level that uses log.LstdFlags | log.Lshortfile | log.Llongfile flags.
-// Using this log level will show all log levels less than or equal to ERR level
+// Error level
 func (t *ToyLog) Error(format string, v ...interface{}) {
-	t.logger.SetFlags(log.LstdFlags | log.Lshortfile)
 	if t.lvl >= ERR {
+		t.logger.SetFlags(log.LstdFlags)
 		t.logger.Output(2, fmt.Sprintf("[ERROR] {\"error\":\""+format+"\"}", v...))
+	}
+}
+
+// Fatal level
+func (t *ToyLog) Fatal(format string, v ...interface{}) {
+	if t.lvl >= ERR {
+		t.logger.SetFlags(log.LstdFlags)
+		t.logger.Output(2, fmt.Sprintf("[FATAL] {\"error\":\""+format+"\"}", v...))
+	}
+	os.Exit(1)
+}
+
+// Panic level
+func (t *ToyLog) Panic(format string, v ...interface{}) {
+	if t.lvl >= ERR {
+		t.logger.SetFlags(log.LstdFlags)
+		t.logger.Panic(2, fmt.Sprintf("[FATAL] {\"error\":\""+format+"\"}", v...))
 	}
 }

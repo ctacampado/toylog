@@ -7,23 +7,6 @@ import (
 	"testing"
 )
 
-func TestNewToyLoggerNIL(t *testing.T) {
-	in := struct {
-		name string
-		lvl  LogLvl
-		file bool
-	}{
-		name: "logger",
-		lvl:  DEBUG,
-		file: false,
-	}
-
-	_, err := NewToyLog(in.name, in.lvl, 12345)
-	if nil != err {
-		t.Log(err.Error())
-	}
-}
-
 func TestNewToyLogToFile(t *testing.T) {
 	in := struct {
 		name string
@@ -35,20 +18,16 @@ func TestNewToyLogToFile(t *testing.T) {
 		file: true,
 	}
 
-	l, err := NewToyLog(in.name, in.lvl, in.file)
-	if nil != err {
-		t.Error(err.Error())
-	}
+	l := NewToyLog(in.name, in.lvl, in.file)
 
 	// delete created log file
 	if runtime.GOOS == "linux" {
 		cmd := exec.Command("rm", l.FileName)
-		err = cmd.Run()
+		err := cmd.Run()
 		if err != nil {
 			log.Fatalf("cmd.Run() failed with %s\n", err)
 		}
 	}
-
 }
 
 func TestInfo(t *testing.T) {
@@ -63,10 +42,8 @@ func TestInfo(t *testing.T) {
 		file: false,
 		in:   "hello world",
 	}
-	logger, err := NewToyLog(in.name, in.lvl, in.file)
-	if nil != err {
-		t.Error(err.Error())
-	}
+
+	logger := NewToyLog(in.name, in.lvl, in.file)
 	logger.Info(in.in)
 	logger.Debug(in.in)
 }
@@ -84,10 +61,7 @@ func TestDebug(t *testing.T) {
 		in:   "hello world",
 	}
 
-	logger, err := NewToyLog(in.name, in.lvl, in.file)
-	if nil != err {
-		t.Error(err.Error())
-	}
+	logger := NewToyLog(in.name, in.lvl, in.file)
 	logger.Debug(in.in)
 }
 
@@ -104,9 +78,6 @@ func TestError(t *testing.T) {
 		in:   "hello world",
 	}
 
-	logger, err := NewToyLog(in.name, in.lvl, in.file)
-	if nil != err {
-		t.Error(err.Error())
-	}
+	logger := NewToyLog(in.name, in.lvl, in.file)
 	logger.Error(in.in)
 }
