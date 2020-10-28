@@ -34,11 +34,17 @@ const (
 // A ToyLog represents a container object for a
 // logger and its current configuration parameters
 type ToyLog struct {
-	name     string      // name of the logger used for labeling logs for easier tracing
-	lvl      LogLvl      // logging level
-	File     *os.File    // stdout or file
-	FileName string      // log file name
-	logger   *log.Logger // pointer to the active logger object
+	// name of the logger used for labeling
+	// logs for easier tracing
+	name string
+	// logging level
+	lvl LogLvl
+	// stdout or file
+	File *os.File
+	// log file name
+	FileName string
+	// pointer to the active logger object
+	l *log.Logger
 }
 
 func initLoggerName(s string) (lname string) {
@@ -53,17 +59,16 @@ func initLogFile() (f *os.File, fname string) {
 	fname = time.Now().Format("2006_01_02_15_04_05") + ".log"
 	f, err := os.OpenFile(fname, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	return
 }
 
-// NewToyLog initializes ToyLog struct. Valid arguments are
-// as follows:
+// NewToyLog initializes ToyLog struct.
+// Valid arguments are as follows:
 // - type string for the logger name
 // - type int for the log level
 // - type bool set to true if you want to output logs to a file.
-//
 // If it is an unknown parameter type, it returns nil
 func NewToyLog(args ...interface{}) (tl *ToyLog) {
 	tl = &ToyLog{
@@ -85,10 +90,10 @@ func NewToyLog(args ...interface{}) (tl *ToyLog) {
 			}
 		default:
 			err := fmt.Sprintf("unknown parameter '%v' of type %s\n", arg, reflect.TypeOf(arg))
-			panic(err)
+			log.Fatal(err)
 		}
 	}
-	tl.logger = log.New(tl.File, tl.name, log.LstdFlags)
+	tl.l = log.New(tl.File, tl.name, log.LstdFlags)
 	return tl
 }
 
@@ -102,48 +107,48 @@ func (t *ToyLog) Close() {
 // Trace level
 func (t *ToyLog) Trace(format string, v ...interface{}) {
 	if t.lvl >= TRACE {
-		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Output(2, fmt.Sprintf("[TRACE] {\"trace\":\""+format+"\"}", v...))
+		t.l.SetFlags(log.LstdFlags)
+		t.l.Output(2, fmt.Sprintf("[TRACE] {\"trace\":\""+format+"\"}", v...))
 	}
 }
 
 // Debug level
 func (t *ToyLog) Debug(format string, v ...interface{}) {
 	if t.lvl >= DEBUG {
-		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Output(2, fmt.Sprintf("[DEBUG] {\"debug\":\""+format+"\"}", v...))
+		t.l.SetFlags(log.LstdFlags)
+		t.l.Output(2, fmt.Sprintf("[DEBUG] {\"debug\":\""+format+"\"}", v...))
 	}
 }
 
 // Info level
 func (t *ToyLog) Info(format string, v ...interface{}) {
 	if t.lvl >= INFO {
-		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Output(2, fmt.Sprintf("[INFO] {\"info\":\""+format+"\"}", v...))
+		t.l.SetFlags(log.LstdFlags)
+		t.l.Output(2, fmt.Sprintf("[INFO] {\"info\":\""+format+"\"}", v...))
 	}
 }
 
 // Warning level
 func (t *ToyLog) Warning(format string, v ...interface{}) {
 	if t.lvl >= INFO {
-		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Output(2, fmt.Sprintf("[WARN] {\"info\":\""+format+"\"}", v...))
+		t.l.SetFlags(log.LstdFlags)
+		t.l.Output(2, fmt.Sprintf("[WARN] {\"info\":\""+format+"\"}", v...))
 	}
 }
 
 // Error level
 func (t *ToyLog) Error(format string, v ...interface{}) {
 	if t.lvl >= ERR {
-		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Output(2, fmt.Sprintf("[ERROR] {\"error\":\""+format+"\"}", v...))
+		t.l.SetFlags(log.LstdFlags)
+		t.l.Output(2, fmt.Sprintf("[ERROR] {\"error\":\""+format+"\"}", v...))
 	}
 }
 
 // Fatal level
 func (t *ToyLog) Fatal(format string, v ...interface{}) {
 	if t.lvl >= ERR {
-		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Output(2, fmt.Sprintf("[FATAL] {\"error\":\""+format+"\"}", v...))
+		t.l.SetFlags(log.LstdFlags)
+		t.l.Output(2, fmt.Sprintf("[FATAL] {\"error\":\""+format+"\"}", v...))
 	}
 	os.Exit(1)
 }
@@ -151,7 +156,7 @@ func (t *ToyLog) Fatal(format string, v ...interface{}) {
 // Panic level
 func (t *ToyLog) Panic(format string, v ...interface{}) {
 	if t.lvl >= ERR {
-		t.logger.SetFlags(log.LstdFlags)
-		t.logger.Panic(2, fmt.Sprintf("[FATAL] {\"error\":\""+format+"\"}", v...))
+		t.l.SetFlags(log.LstdFlags)
+		t.l.Panic(2, fmt.Sprintf("[FATAL] {\"error\":\""+format+"\"}", v...))
 	}
 }
