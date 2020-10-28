@@ -21,14 +21,14 @@ type LogLvl int
 
 //logging levels
 const (
-	PROD LogLvl = iota
-	TRACE
-	DEBUG
-	INFO
-	WARNING
-	ERR
+	OFF LogLvl = iota
 	FATAL
-	PANIC
+	ERROR
+	WARN
+	INFO
+	DEBUG
+	TRACE
+	ALL
 )
 
 // A ToyLog represents a container object for a
@@ -81,7 +81,7 @@ func NewToyLog(args ...interface{}) (tl *ToyLog) {
 		case string:
 			tl.name = initLoggerName(a)
 		case LogLvl:
-			if a >= 0 && a <= PANIC {
+			if a >= 0 && a <= ALL {
 				tl.lvl = a
 			}
 		case bool:
@@ -130,7 +130,7 @@ func (t *ToyLog) Info(format string, v ...interface{}) {
 
 // Warning level
 func (t *ToyLog) Warning(format string, v ...interface{}) {
-	if t.lvl >= INFO {
+	if t.lvl >= WARN {
 		t.l.SetFlags(log.LstdFlags)
 		t.l.Output(2, fmt.Sprintf("[WARN] {\"info\":\""+format+"\"}", v...))
 	}
@@ -138,7 +138,7 @@ func (t *ToyLog) Warning(format string, v ...interface{}) {
 
 // Error level
 func (t *ToyLog) Error(format string, v ...interface{}) {
-	if t.lvl >= ERR {
+	if t.lvl >= ERROR {
 		t.l.SetFlags(log.LstdFlags)
 		t.l.Output(2, fmt.Sprintf("[ERROR] {\"error\":\""+format+"\"}", v...))
 	}
@@ -146,17 +146,9 @@ func (t *ToyLog) Error(format string, v ...interface{}) {
 
 // Fatal level
 func (t *ToyLog) Fatal(format string, v ...interface{}) {
-	if t.lvl >= ERR {
+	if t.lvl >= FATAL {
 		t.l.SetFlags(log.LstdFlags)
 		t.l.Output(2, fmt.Sprintf("[FATAL] {\"error\":\""+format+"\"}", v...))
 	}
 	os.Exit(1)
-}
-
-// Panic level
-func (t *ToyLog) Panic(format string, v ...interface{}) {
-	if t.lvl >= ERR {
-		t.l.SetFlags(log.LstdFlags)
-		t.l.Panic(2, fmt.Sprintf("[FATAL] {\"error\":\""+format+"\"}", v...))
-	}
 }
